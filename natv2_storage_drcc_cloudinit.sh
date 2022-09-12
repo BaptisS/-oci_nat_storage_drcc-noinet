@@ -8,8 +8,9 @@ firewall-offline-cmd --zone=public --add-port=443/tcp
 firewall-offline-cmd --zone=public --add-masquerade 
 
 vmmeta=$(curl -L http://169.254.169.254/opc/v1/instance/)
-curegnoq=$(echo $vmmeta | jq -r '.region')
-storip=$(dig +short objectstorage.$curegnoq.oraclecloudXX.com. | awk '{line = $0} END {print line}')
+vmregion=$(echo $vmmeta | jq -r '.region')
+vmrealmurl=$(echo $vmmeta | jq -r '.regionInfo.realmDomainComponent')
+storip=$(dig +short objectstorage.$vmregion.$vmrealmurl. | awk '{line = $0} END {print line}')
 localip=$(hostname -I | awk '{print $1}')
 firewall-offline-cmd --zone=public --add-rich-rule="rule family=ipv4 destination address='$localip' forward-port port=443 protocol=tcp to-port=443 to-addr='$storip'"
 
